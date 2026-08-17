@@ -19,10 +19,9 @@
   }
 
   .brand img {
-    height: 6rem;
-    width: 6rem;
-    object-fit: fill;
-    border-radius: 25%;
+  height: 55px;      
+  width: auto;
+  object-fit: contain;
   }
 
   .nav {
@@ -145,6 +144,12 @@
     cursor: pointer;
   }
   
+    @media (min-width: 768px) and (max-width: 1024px) {
+  .header{
+    padding: 4rem 4rem;
+    
+  }
+}
 
   // Mobile styles
   @media (max-width: 768px) {
@@ -264,6 +269,8 @@
     }
   }
 }
+
+
 
 
   
