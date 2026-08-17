@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './HeroHome.module.scss';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/Button';
 
@@ -12,6 +11,7 @@ const slides = [
 function HeroSplitSection({ title, description }) {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     if (slides[current].type !== 'image') return;
@@ -19,6 +19,20 @@ function HeroSplitSection({ title, description }) {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearTimeout(timer);
+  }, [current]);
+
+  // Fuerza el play del video en móviles cuando entra en pantalla
+  useEffect(() => {
+    if (slides[current].type === 'video' && videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Si el navegador bloquea el autoplay, avanzamos al siguiente slide
+          // para no quedar en pantalla negra.
+          setCurrent((prev) => (prev + 1) % slides.length);
+        });
+      }
+    }
   }, [current]);
 
   const next = () => setCurrent((prev) => (prev + 1) % slides.length);
@@ -39,21 +53,22 @@ function HeroSplitSection({ title, description }) {
                 className={`${styles.slide} ${i === current ? styles.active : ''}`}
               >
                 {slide.type === 'image' ? (
-                  <Image
+                  <img
                     src={slide.src}
                     alt={slide.alt}
-                    width={500}
-                    height={300}
                     className={styles.media}
                   />
                 ) : (
                   i === current && (
                     <video
+                      ref={videoRef}
                       className={styles.media}
                       src={slide.src}
                       autoPlay
                       muted
+                      loop={false}
                       playsInline
+                      preload="auto"
                       onEnded={next}
                     />
                   )
