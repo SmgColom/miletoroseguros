@@ -5,7 +5,7 @@ import Button from '@/components/common/Button';
 
 const slides = [
   { type: 'image', src: '/tigre.jpg', alt: 'Imagen tigre Suramericana' },
-  { type: 'video', src: '/hero-video.mp4' },
+  { type: 'video', src: '/hero-video-opt.mp4' },
 ];
 
 function HeroSplitSection({ title, description }) {
@@ -23,7 +23,13 @@ function HeroSplitSection({ title, description }) {
 
   // Fuerza el play del video en móviles cuando entra en pantalla
   useEffect(() => {
-    if (slides[current].type === 'video' && videoRef.current) {
+    if (slides[current].type !== 'video') return;
+
+    if (videoRef.current) {
+      // Fuerza el mute a nivel DOM (Chrome iOS lo exige para el autoplay)
+      videoRef.current.muted = true;
+      videoRef.current.defaultMuted = true;
+
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
@@ -33,6 +39,13 @@ function HeroSplitSection({ title, description }) {
         });
       }
     }
+
+    // Respaldo: si en 10s el video no terminó (no cargó o no reprodujo), avanza igual
+    const fallback = setTimeout(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 10000);
+
+    return () => clearTimeout(fallback);
   }, [current]);
 
   const next = () => setCurrent((prev) => (prev + 1) % slides.length);
