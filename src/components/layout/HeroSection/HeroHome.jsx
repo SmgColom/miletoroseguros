@@ -11,8 +11,24 @@ const slides = [
 function HeroSplitSection({ title, description }) {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
+  const [userInteracted, setUserInteracted] = useState(false);
   const videoRef = useRef(null);
 
+  // Detecta la primera interacción del usuario (toque, scroll o click)
+  useEffect(() => {
+    const enableVideo = () => setUserInteracted(true);
+    window.addEventListener('touchstart', enableVideo, { once: true });
+    window.addEventListener('click', enableVideo, { once: true });
+    window.addEventListener('scroll', enableVideo, { once: true });
+
+    return () => {
+      window.removeEventListener('touchstart', enableVideo);
+      window.removeEventListener('click', enableVideo);
+      window.removeEventListener('scroll', enableVideo);
+    };
+  }, []);
+
+  // La imagen avanza sola tras 5s
   useEffect(() => {
     if (slides[current].type !== 'image') return;
     const timer = setTimeout(() => {
@@ -21,32 +37,21 @@ function HeroSplitSection({ title, description }) {
     return () => clearTimeout(timer);
   }, [current]);
 
-  // Fuerza el play del video en móviles cuando entra en pantalla
+  // Cuando el slide de video está activo, intenta reproducirlo
   useEffect(() => {
-    if (slides[current].type !== 'video') return;
+    if (slides[current].type !== 'video' || !videoRef.current) return;
 
-    if (videoRef.current) {
-      // Fuerza el mute a nivel DOM (Chrome iOS lo exige para el autoplay)
-      videoRef.current.muted = true;
-      videoRef.current.defaultMuted = true;
+    videoRef.current.muted = true;
+    videoRef.current.defaultMuted = true;
 
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Si el navegador bloquea el autoplay, avanzamos al siguiente slide
-          // para no quedar en pantalla negra.
-          setCurrent((prev) => (prev + 1) % slides.length);
-        });
-      }
+    const playPromise = videoRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Autoplay bloqueado: el video espera la interacción del usuario.
+        // No saltamos de vuelta a la imagen; se queda listo para reproducir.
+      });
     }
-
-    // Respaldo: si en 10s el video no terminó (no cargó o no reprodujo), avanza igual
-    const fallback = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 10000);
-
-    return () => clearTimeout(fallback);
-  }, [current]);
+  }, [current, userInteracted]);
 
   const next = () => setCurrent((prev) => (prev + 1) % slides.length);
 
@@ -82,6 +87,7 @@ function HeroSplitSection({ title, description }) {
                       loop={false}
                       playsInline
                       preload="auto"
+                      poster="/tigre.jpg"
                       onEnded={next}
                     />
                   )
