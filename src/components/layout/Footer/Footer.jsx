@@ -43,12 +43,6 @@ function Footer() {
           <p>Centro Comercial Punto Clave</p>
           <p>302 246 0236</p>
         </div>
-
-        <div className={styles.logoSection}>
-          <div className={styles.logo}>
-            <img src="/Logo.jpeg" alt="Logo Mile Toro" />
-          </div>
-        </div>
       </div>
 
       <div className={styles.footerbottom}>

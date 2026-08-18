@@ -3,16 +3,23 @@ import styles from './HeroHome.module.scss';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/Button';
 
-const slides = [
+const defaultSlides = [
   { type: 'image', src: '/tigre.jpg', alt: 'Imagen tigre Suramericana' },
   { type: 'video', src: '/hero-video-opt.mp4' },
 ];
 
-function HeroSplitSection({ title, description }) {
+function HeroSplitSection({ title, description, slides = defaultSlides }) {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [userInteracted, setUserInteracted] = useState(false);
   const videoRef = useRef(null);
+
+  // Si slides cambia y current queda fuera de rango, lo reseteamos
+  useEffect(() => {
+    if (current > slides.length - 1) {
+      setCurrent(0);
+    }
+  }, [slides, current]);
 
   // Detecta la primera interacción del usuario (toque, scroll o click)
   useEffect(() => {
@@ -28,18 +35,19 @@ function HeroSplitSection({ title, description }) {
     };
   }, []);
 
-  // La imagen avanza sola tras 5s
+  // La imagen avanza sola tras 5s (solo si hay más de un slide)
   useEffect(() => {
-    if (slides[current].type !== 'image') return;
+    if (slides.length <= 1) return;
+    if (slides[current]?.type !== 'image') return;
     const timer = setTimeout(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearTimeout(timer);
-  }, [current]);
+  }, [current, slides]);
 
   // Cuando el slide de video está activo, intenta reproducirlo
   useEffect(() => {
-    if (slides[current].type !== 'video' || !videoRef.current) return;
+    if (slides[current]?.type !== 'video' || !videoRef.current) return;
 
     videoRef.current.muted = true;
     videoRef.current.defaultMuted = true;
@@ -51,7 +59,7 @@ function HeroSplitSection({ title, description }) {
         // No saltamos de vuelta a la imagen; se queda listo para reproducir.
       });
     }
-  }, [current, userInteracted]);
+  }, [current, userInteracted, slides]);
 
   const next = () => setCurrent((prev) => (prev + 1) % slides.length);
 
@@ -75,6 +83,7 @@ function HeroSplitSection({ title, description }) {
                     src={slide.src}
                     alt={slide.alt}
                     className={styles.media}
+                    style={{ objectFit: slide.fit || 'cover' }}
                   />
                 ) : (
                   i === current && (
@@ -95,16 +104,18 @@ function HeroSplitSection({ title, description }) {
               </div>
             ))}
 
-            <div className={styles.dots}>
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  className={`${styles.dot} ${i === current ? styles.dotActive : ''}`}
-                  onClick={() => setCurrent(i)}
-                  aria-label={`Ir al slide ${i + 1}`}
-                />
-              ))}
-            </div>
+            {slides.length > 1 && (
+              <div className={styles.dots}>
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`${styles.dot} ${i === current ? styles.dotActive : ''}`}
+                    onClick={() => setCurrent(i)}
+                    aria-label={`Ir al slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
