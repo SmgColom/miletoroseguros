@@ -27,7 +27,7 @@ function AboutPage() {
         title="Mile Toro, tu asesora de soluciones en seguros"
         description="Porque cuidar lo que más quieres no debería ser complicado, estoy para acompañarte con empatía, claridad y de la mano de la compañía que cumple cuando más lo necesitas. Solo dime qué te preocupa, y construimos juntos la mejor solución. 💙"
         slides={[
-          { type: 'image', src: '/FotoAbout.jpeg', alt: 'Foto de Mile Toro', fit: 'contain' },
+          { type: 'image', src: '/FotoAbout.jpeg', alt: 'Foto de Mile Toro', fit: 'cover' },
         ]}
       />
     </Fragment>
